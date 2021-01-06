@@ -32,10 +32,10 @@ int environmment_flag;
 /********** Declaring Function Prototypes **********/
 
 void clear_variables(); 
-void print_history_list ();
 void environmment();
 void set_environment_variables();
 void change_directory();
+void echo_calling(char *echo_val);
 char *skipwhite (char* );
 void tokenize_by_space (char *);
 char *skip_double_quote(char* );
@@ -71,20 +71,7 @@ void clear_variables() {
 	environmment_flag = 0;
 }
 
-/* This function prints the comand history when "history" command is given */
 
-void print_history_list () {
-  	
-  	register HIST_ENTRY **the_list;
-    register int i;
-
-    the_list = history_list ();
-    if (the_list)
-    	for (i = 0; the_list[i]; i++)
-            printf ("%d: %s\n", i + history_base, the_list[i]->line);
-    return;
-}
-  
 /* This function is used to create the Shell Prompt */
 
 void shell_prompt() {
@@ -156,6 +143,83 @@ void change_directory() {
 		perror("No such file or directory: ");
 
 }
+
+void echo_calling(char *echo_val)
+{
+  int i=0, index=0;
+  environmment_flag=0;
+  char new_args[1024],env_val[1000], *str[10];
+  str[0]=strtok(echo_val," ");
+  str[1]=strtok(NULL, "");
+  strcpy(env_val, args[1]);
+  if(str[1]==NULL)
+         {
+          printf("\n");
+          return;
+         } 
+  if (strchr(str[1], '$')) 
+                  {
+                  environmment_flag=1;
+                  }
+  
+  memset(new_args, '\0', sizeof(new_args));
+  i=0; 
+  while(str[1][i]!='\0')
+    {
+      if(str[1][i]=='"')
+      {
+      index=0;     
+      while(str[1][i]!='\0')
+          {
+          if(str[1][i]!='"')
+                {
+                new_args[index]=str[1][i];
+                 flag=1;
+                index++;
+                }
+          i++;
+          }             
+      }
+      else if(str[1][i]==39)
+      {
+      index=0;
+      while(str[1][i]!='\0')
+          {
+          if(str[1][i]!=39)
+                {
+                new_args[index]=str[1][i];
+                 flag=1;
+                index++;
+                }
+          i++;
+          }               
+      }
+      else if(str[1][i]!='"')
+        {
+          new_args[index]=str[1][i];
+          index++;
+          i++;
+        }
+      else i++;    
+    }
+
+
+new_args[index]='\0';
+if((strcmp(args[1], new_args)==0)&&(environmment_flag==0))
+    printf("%s\n", new_args);
+else {
+     strcpy(args[1], new_args);
+      if(environmment_flag==1)
+                {
+                environmment();
+                }
+      else if(environmment_flag==0)
+                {
+                  printf("%s\n", new_args ); 
+                }
+    }  
+}
+
 
 
 /* This function tokenizes the input string based on white-space [" "] */
